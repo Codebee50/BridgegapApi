@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-h!pny2vumk0)ri3m6t3j&en)d=7n0y1%yt4vgjij8^1y7z=db9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = []
+else:
+    ALLOWED_HOSTS = ['bridgegapclothing.com', 'www.bridgegapclothing.com']
 
 
 # Application definition
@@ -78,10 +81,22 @@ WSGI_APPLICATION = 'bridge.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'bridguxa_bridgegapdb',
+            'USER' : 'bridguxa_beeadmin',
+            'PASSWORD': 'beepassword',
+            'HOST': 'localhost',
+            'PORT': '3306',
     }
 }
 
