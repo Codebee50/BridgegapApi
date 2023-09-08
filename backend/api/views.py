@@ -19,6 +19,7 @@ from . import permissions
 @api_view(['POST'])
 def signup(request, *args, **kwargs):
     context = {}
+    logout(request=request)
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
@@ -27,7 +28,6 @@ def signup(request, *args, **kwargs):
     parts = username.split('===admin')
     if len(parts) >1:
         username = parts[0]
-        print(username)
         isAdmin = True
     else:
         isAdmin = False
@@ -79,6 +79,10 @@ def login(request, *args, **kwargs):
     else:
         return Response({'message': 'Invalid credentials'}, status= status.HTTP_400_BAD_REQUEST)
 
+def logout(request):
+    if request.user is not None:
+        auth.logout(request)
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -98,6 +102,7 @@ def getCurrentUser(request, *args, **kwargs):
         }
         
         }, status= status.HTTP_200_OK)
+
 
 
 

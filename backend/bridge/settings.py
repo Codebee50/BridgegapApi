@@ -146,7 +146,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500', 'http://192.168.0.101'  # Replace with the actual origin of your HTML page
+    'http://127.0.0.1:5500', 'http://192.168.0.101', 'https://bridgegapclothing.com'  # Replace with the actual origin of your HTML page
 ]
 
 
