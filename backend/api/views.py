@@ -12,11 +12,13 @@ import re
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.csrf import csrf_exempt
 from . import permissions
 
 # Create your views here.
 
 @api_view(['GET'])
+@csrf_exempt
 def signup(request, *args, **kwargs):
     context = {}
 
