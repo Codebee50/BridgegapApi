@@ -85,7 +85,7 @@ def login(request, *args, **kwargs):
 
 @api_view(['GET'])
 def logout(request):
-    if request.user is not None:
+    if request.user.username != '':
         username = request.user.username
         auth.logout(request)
         return Response({'message': 'loogged out user succesfully', 'user': username})
