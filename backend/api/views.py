@@ -105,7 +105,15 @@ def getCurrentUser(request, *args, **kwargs):
         
         }, status= status.HTTP_200_OK)
 
-
+@api_view(['POST', 'GET'])
+def getuser(request):
+    return Response({
+        'message': 'user found',
+        'user': {
+            'username': request.user.username,
+            'userid': request.user.id
+        }
+    }, status= status.HTTP_200_OK)
 
 
 """this view gets creates a category in the database if te category name does not already exist"""
