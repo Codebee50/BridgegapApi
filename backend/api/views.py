@@ -87,7 +87,7 @@ def login(request, *args, **kwargs):
 def logout(request):
     if request.user is not None:
         auth.logout(request)
-        return Response({'message': 'loogged out user succesfully'})
+        return Response({'message': 'loogged out user succesfully', 'user': request.user.username})
     else:
         return Response({'message': 'user is none'})
 
