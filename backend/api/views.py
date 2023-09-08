@@ -80,6 +80,7 @@ def login(request, *args, **kwargs):
     else:
         return Response({'message': 'Invalid credentials'}, status= status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
 def logout(request):
     if request.user is not None:
         auth.logout(request)
