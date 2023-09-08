@@ -54,7 +54,7 @@ def signup(request, *args, **kwargs):
     else:
         return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
  
-@api_view(['GET'])
+@api_view(['POST'])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
     password = request.data.get('password')
