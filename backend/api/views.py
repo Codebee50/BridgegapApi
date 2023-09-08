@@ -16,7 +16,7 @@ from . import permissions
 
 # Create your views here.
 
-@api_view(['POST'])
+@api_view(['GET'])
 def signup(request, *args, **kwargs):
     context = {}
 
@@ -53,7 +53,7 @@ def signup(request, *args, **kwargs):
     else:
         return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
  
-@api_view(['POST'])
+@api_view(['GET'])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
     password = request.data.get('password')
