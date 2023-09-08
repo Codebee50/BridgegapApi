@@ -18,7 +18,6 @@ from . import permissions
 # Create your views here.
 
 @api_view(['POST'])
-@csrf_exempt
 def signup(request, *args, **kwargs):
     context = {}
 
@@ -84,6 +83,9 @@ def login(request, *args, **kwargs):
 def logout(request):
     if request.user is not None:
         auth.logout(request)
+        return Response({'message': 'loogged out user succesfully'})
+    else:
+        return Response({'message': 'user is none'})
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
