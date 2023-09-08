@@ -17,7 +17,7 @@ from . import permissions
 
 # Create your views here.
 
-@api_view(['GET'])
+@api_view(['POST'])
 @csrf_exempt
 def signup(request, *args, **kwargs):
     context = {}
