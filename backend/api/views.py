@@ -65,7 +65,7 @@ def login(request, *args, **kwargs):
     user = auth.authenticate(request, username=email, password=password)
 
     if user is not None:
-        auth.login(request, user)
+        # auth.login(request, user)
         try:
             old_token = Token.objects.get(user=user)
             old_token.delete()
