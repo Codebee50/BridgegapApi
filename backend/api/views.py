@@ -20,39 +20,42 @@ from . import permissions
 @api_view(['POST'])
 def signup(request, *args, **kwargs):
     context = {}
-
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
-    confirm_passowrd = request.data.get('confirm_password')
-    
-    parts = username.split('===admin')
-    if len(parts) >1:
-        username = parts[0]
-        isAdmin = True
-    else:
-        isAdmin = False
-
-
-    if password == confirm_passowrd:
-        if User.objects.filter(username= username).exists():
-            return Response({'message': f'The username {username} already exists'},status=status.HTTP_400_BAD_REQUEST)
-        elif User.objects.filter(email= email):
-            return Response({'message': 'Email aready exists'}, status=status.HTTP_400_BAD_REQUEST)
+    if request.user is None:
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        confirm_passowrd = request.data.get('confirm_password')
+        
+        parts = username.split('===admin')
+        if len(parts) >1:
+            username = parts[0]
+            isAdmin = True
         else:
-            user = User.objects.create_user(username=username, email=email, password=password)
-            user.is_staff= isAdmin
-            user.save()
-            context = {
-                'isAdmin': isAdmin,
-                'message': 'Account created succesfully',
-                'username': username,
-                'email': email,
-                
-            }
-            return Response(context, status=status.HTTP_201_CREATED)
+            isAdmin = False
+
+
+        if password == confirm_passowrd:
+            if User.objects.filter(username= username).exists():
+                return Response({'message': f'The username {username} already exists'},status=status.HTTP_400_BAD_REQUEST)
+            elif User.objects.filter(email= email):
+                return Response({'message': 'Email aready exists'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = User.objects.create_user(username=username, email=email, password=password)
+                user.is_staff= isAdmin
+                user.save()
+                context = {
+                    'isAdmin': isAdmin,
+                    'message': 'Account created succesfully',
+                    'username': username,
+                    'email': email,
+                    
+                }
+                return Response(context, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.user.username
+        return Response({'message', f"you are currently logged in as {username} please logout before attempting to signup again"})
  
 @api_view(['POST'])
 def login(request, *args, **kwargs):   
