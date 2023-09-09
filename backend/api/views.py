@@ -20,7 +20,6 @@ from . import permissions
 
 @api_view(['POST'])
 def signup(request, *args, **kwargs):
-    print('user trying to signup' , request.user.username)
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
