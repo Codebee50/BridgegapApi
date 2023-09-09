@@ -9,7 +9,7 @@ from rest_framework import status
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, login
 import re
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
@@ -19,46 +19,45 @@ from . import permissions
 # Create your views here.
 
 @api_view(['POST'])
+@authentication_classes([SessionAuthentication])
 def signup(request, *args, **kwargs):
-    context = {}
-    if request.user is None:
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
-        confirm_passowrd = request.data.get('confirm_password')
-        
-        parts = username.split('===admin')
-        if len(parts) >1:
-            username = parts[0]
-            isAdmin = True
-        else:
-            isAdmin = False
+    print('user trying to signup' , request.user.username)
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+    confirm_passowrd = request.data.get('confirm_password')
 
-
-        if password == confirm_passowrd:
-            if User.objects.filter(username= username).exists():
-                return Response({'message': f'The username {username} already exists'},status=status.HTTP_400_BAD_REQUEST)
-            elif User.objects.filter(email= email):
-                return Response({'message': 'Email aready exists'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                user = User.objects.create_user(username=username, email=email, password=password)
-                user.is_staff= isAdmin
-                user.save()
-                context = {
-                    'isAdmin': isAdmin,
-                    'message': 'Account created succesfully',
-                    'username': username,
-                    'email': email,
-                    
-                }
-                return Response(context, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
+    parts = username.split('===admin')
+    if len(parts) >1:
+        username = parts[0]
+        isAdmin = True
     else:
-        username = request.user.username
-        return Response({'message', f"you are currently logged in as {username} please logout before attempting to signup again"})
+        isAdmin = False
+
+    
+    if password == confirm_passowrd:
+        if User.objects.filter(username= username).exists():
+            return Response({'message': f'The username {username} already exists'},status=status.HTTP_400_BAD_REQUEST)
+        elif User.objects.filter(email= email):
+            return Response({'message': 'Email aready exists'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_staff= isAdmin
+            user.save()
+            context = {
+                'isAdmin': isAdmin,
+                'message': 'Account created succesfully',
+                'username': username,
+                'email': email,
+                
+            }
+            return Response(context, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
+   
  
 @api_view(['POST'])
+@authentication_classes([SessionAuthentication])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
     password = request.data.get('password')
@@ -66,7 +65,7 @@ def login(request, *args, **kwargs):
     user = auth.authenticate(request, username=email, password=password)
 
     if user is not None:
-        # auth.login(request, user)
+        auth.login(request, user)
         try:
             old_token = Token.objects.get(user=user)
             old_token.delete()

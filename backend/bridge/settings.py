@@ -149,6 +149,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5500', 'https://bridgegapclothing.com'
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 
 AUTHENTICATION_BACKENDS = [
     'api.mauth.EmailBackend',
