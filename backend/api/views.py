@@ -18,7 +18,7 @@ from . import permissions
 
 # Create your views here.
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes([SessionAuthentication])
 def signup(request, *args, **kwargs):
     print('user trying to signup' , request.user.username)
@@ -56,7 +56,7 @@ def signup(request, *args, **kwargs):
         return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
    
  
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes([SessionAuthentication])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
