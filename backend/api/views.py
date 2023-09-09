@@ -19,7 +19,6 @@ from . import permissions
 # Create your views here.
 
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication])
 def signup(request, *args, **kwargs):
     print('user trying to signup' , request.user.username)
     username = request.data.get('username')
@@ -57,7 +56,6 @@ def signup(request, *args, **kwargs):
    
  
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
     password = request.data.get('password')
