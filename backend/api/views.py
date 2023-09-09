@@ -19,7 +19,6 @@ from .decorators import check_user
 # Create your views here.
 
 @api_view(['POST'])
-@check_user
 def signup(request, *args, **kwargs):
     context = {}
     if request.user is None:
