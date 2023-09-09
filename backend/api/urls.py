@@ -15,5 +15,6 @@ urlpatterns =[
     path('getcurrentuser/', views.getCurrentUser, name='getcurrentuser'),
     path('validate-token/', views.validateToken, name='validatetoken'),
     path('logout/', views.logout, name='logout' ),
+    path('edituser/', views.edituser, name='edituser'),
     path('getuser/', views.getuser, name='getuser')
 ]

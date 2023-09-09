@@ -93,6 +93,7 @@ def logout(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def validateToken(request):
+
     return Response({'message': 'Token is valid'}, status= status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -104,10 +105,41 @@ def getCurrentUser(request, *args, **kwargs):
         'user': {
             'username': request.user.username,
             'is_staff': request.user.is_staff,
-            'userId': request.user.id
+            'userId': request.user.id,
+            'email': request.user.email
         }
         
         }, status= status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def edituser(request, *args, **kwargs):
+    print('pagahga')
+    new_username = request.data.get('username')
+    print('the new username is ', new_username)
+    if not User.objects.filter(username= new_username):
+        try:
+            user = User.objects.get(id = request.user.id)
+        except Exception as e:
+            user = None
+
+        if(user):
+            user.username = new_username
+            user.save()
+            return Response({
+                'message': 'User updated succesfully',
+                'username': user.username
+            }, status= status.HTTP_200_OK)
+        else:
+            return Response({
+                'message': 'User does not exist'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({
+            'message': f"A user with the name {new_username} already exists"
+        })
+    
 
 @api_view(['POST', 'GET'])
 def getuser(request):
