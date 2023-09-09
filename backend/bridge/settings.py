@@ -144,7 +144,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '../media/'
+MEDIA_ROOT = '../../media/'
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5500', 'https://bridgegapclothing.com'
