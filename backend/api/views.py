@@ -14,6 +14,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from . import permissions
+from bridge import settings
+from django.core.mail import send_mail
 
 
 # Create your views here.
@@ -285,6 +287,8 @@ class ListSubCategoryApiView(generics.ListAPIView):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
 
+
+
 @api_view(['GET', 'POST'])
 def GetDetails(request, *args, **kwargs):
     current_site =get_current_site(request)
@@ -293,3 +297,14 @@ def GetDetails(request, *args, **kwargs):
         'site_name': 'Bridge Gap Clothing'
     }
     return Response(context)
+
+@api_view(['POST'])
+def contactBridgeGap(request, *args, **kwargs):
+    print('seding email..')
+    email = request.data.get('email')
+    subject = request.data.get('subject')
+    message = request.data.get('message')
+
+    sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
+    send_mail(subject, message, sender, ['codebee345@outlook.com', 'onuhudoudo@gmail.com'],fail_silently=False)
+    return Response({'message': 'email sent succesfully'})

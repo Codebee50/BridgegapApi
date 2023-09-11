@@ -16,5 +16,6 @@ urlpatterns =[
     path('validate-token/', views.validateToken, name='validatetoken'),
     path('logout/', views.logout, name='logout' ),
     path('edituser/', views.edituser, name='edituser'),
-    path('getuser/', views.getuser, name='getuser')
+    path('getuser/', views.getuser, name='getuser'),
+    path('contactbridgegap/', views.contactBridgeGap, name='contactbridgegap')
 ]
