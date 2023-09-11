@@ -175,7 +175,7 @@ if DEBUG:
     EMAIL_FROM_USER = 'codebee286@gmail.com'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 else:
-    EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.elasticemail.com'
     EMAIL_PORT = 2525
     EMAIL_USE_TLS= True
