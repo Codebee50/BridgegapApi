@@ -24,6 +24,7 @@ SECRET_KEY = 'django-insecure-h!pny2vumk0)ri3m6t3j&en)d=7n0y1%yt4vgjij8^1y7z=db9
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+DOMAIN_SITE = 'localhost:5500'
 
 if DEBUG:
     ALLOWED_HOSTS = []
@@ -62,7 +63,7 @@ ROOT_URLCONF = 'bridge.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR/'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -147,7 +148,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = '../../public_html/media/'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500', 'https://bridgegapclothing.com'
+    'http://127.0.0.1:5500', 'https://bridgegapclothing.com', 'http://localhost:5500'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -167,20 +168,22 @@ REST_FRAMEWORK = {
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
+    EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+    EMAIL_PORT = '2525'
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = 'codebee286@gmail.com'
-    EMAIL_HOST_PASSWORD = 'sssvsyicmhkyzskg'
-    EMAIL_FROM_USER = 'codebee286@gmail.com'
+    EMAIL_HOST_USER = 'e1c66396671ac5'
+    EMAIL_HOST_PASSWORD = 'b7b9bff8b5ffb2'
+    EMAIL_FROM_USER = 'e1c66396671ac5'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.elasticemail.com'
-    EMAIL_PORT = 2525
+    EMAIL_HOST = 'smtp.bridgegapclothing.com'
+    EMAIL_PORT = 465
     EMAIL_USE_TLS= True
-    EMAIL_HOST_USER = 'contact@bridgegapclothing.com'
-    EMAIL_HOST_PASSWORD = 'F410CE7971D7760C0EBF754D6AC4CB9BF458'
+    EMAIL_HOST_USER = 'noreply@bridgegapclothing.com'
+    EMAIL_HOST_PASSWORD = 'A[Kc7.9_{.0A'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
 
 

@@ -17,5 +17,9 @@ urlpatterns =[
     path('logout/', views.logout, name='logout' ),
     path('edituser/', views.edituser, name='edituser'),
     path('getuser/', views.getuser, name='getuser'),
-    path('contactbridgegap/', views.contactBridgeGap, name='contactbridgegap')
+    path('contactbridgegap/', views.contactBridgeGap, name='contactbridgegap'),
+    path('validateuser', views.validateUser, name='validateuser'),
+    path('resendactivationemail', views.resend_activation_email, name='resendactivationemail'),
+    path('requestresetpassword/', views.RequestResetPassword, name='requestresetpassword'),
+    path('changeuserpassword', views.ChangeUserPassword, name='changeuserpassword')
 ]

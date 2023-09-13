@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import generics
 from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer
-from .models import Category, Product, SubCategory
+from .models import Category, Product, SubCategory, Profile
 from rest_framework import status
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, login
@@ -15,11 +15,15 @@ from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from . import permissions
 from bridge import settings
-from django.core.mail import send_mail
-
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.utils.encoding import force_bytes, force_str as force_text, DjangoUnicodeDecodeError
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from .utils import generate_token
+from django.utils.html import strip_tags
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 # Create your views here.
-
 @api_view(['POST'])
 def signup(request, *args, **kwargs):
     username = request.data.get('username')
@@ -44,41 +48,216 @@ def signup(request, *args, **kwargs):
             user = User.objects.create_user(username=username, email=email, password=password)
             user.is_staff= isAdmin
             user.save()
+
+            user_profile = Profile.objects.create(user=user, id_user=user.id)
+
+            #send a verification email
+            sendActivationEmail(request=request, user=user_profile)
+            # context = {
+            #     'isAdmin': isAdmin,
+            #     'message': 'Account created succesfully',
+            #     'username': username,
+            #     'email': email,
+            # }
+            # return Response(context, status=status.HTTP_201_CREATED)
+
             context = {
-                'isAdmin': isAdmin,
-                'message': 'Account created succesfully',
-                'username': username,
-                'email': email,
-                
+                'message': f'An email has been sent to {user.email}, click on the link in the email to verify your email address',
+                'username': user.username,
+                'email': user.email
             }
-            return Response(context, status=status.HTTP_201_CREATED)
+    
+            return Response(context, status=status.HTTP_200_OK)
     else:
-        return Response({'message':'Passwords are not thesame '}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message':'Passwords are not the same '}, status=status.HTTP_400_BAD_REQUEST)
    
- 
+def sendActivationEmail(request, user):
+    email_subject = 'Verify your account'
+    if settings.DEBUG:
+        current_site = settings.DOMAIN_SITE
+    else:
+        current_site = get_current_site(request=request)
+
+
+    email_body = render_to_string('activate.html', {
+        'user': user,
+        'domain': current_site,
+        'uid': urlsafe_base64_encode(force_bytes(user.user.id)),
+        'token': generate_token.make_token(user)
+    })
+
+    text_content = strip_tags(email_body)
+    sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
+    email= EmailMultiAlternatives(
+        email_subject,
+        text_content,
+        sender,
+        [user.user.email]
+    )
+    email.attach_alternative(email_body, 'text/html')
+    email.send()
+
+@api_view(['POST'])
+def RequestResetPassword(request, *args, **kwargs):
+    user_email = request.data.get('email')
+
+    user = User.objects.filter(email = user_email)
+    try: 
+        user = User.objects.get(email=user_email)
+    except Exception as e:
+        user = None
+    if user is not None:
+        user_profile = Profile.objects.get(id_user = user.id)
+        if settings.DEBUG:
+            current_site = settings.DOMAIN_SITE
+        else:
+            current_site = get_current_site(request=request)
+        email_subject = '[Bridgegapclothing] Reset your password'
+
+        email_body = render_to_string('reset-password.html', {
+            'user': user_profile,
+            'domain': current_site,
+            'uid': urlsafe_base64_encode(force_bytes(user_profile.user.id)),
+            'token': PasswordResetTokenGenerator().make_token(user)
+        })
+
+        text_content = strip_tags(email_body)
+        sender = 'Bridgegap Clothing <' + str(settings.EMAIL_HOST_USER) + '>' 
+        email = EmailMultiAlternatives(
+                email_subject,
+                text_content,
+                sender,
+                [user_profile.user.email] 
+            )
+        email.attach_alternative(email_body, 'text/html')
+        email.content_subtype = 'html'
+        email.send()
+        return Response({'message': f'Instructions on how to reset your password has been sent to {user_email}'}, status= status.HTTP_200_OK)
+    else:
+        return Response({'message': f'{user_email} was not found in our records, please ensure that you have previously signed up with this email'}, status= status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def ChangeUserPassword(request, *args, **kwargs):
+    uidb64 = request.query_params.get('uidb64')
+    token = request.query_params.get('token')
+
+    password_one = request.data.get('password-one')
+    password_two = request.data.get('password-two')
+
+    if password_one != password_two:
+        return Response({'message': 'Passwords do not match'}, status= status.HTTP_400_BAD_REQUEST)
+    else:
+        try:
+            #decode this and give us the user id
+            #its returns a byte so we have to turn it to string using force text
+            user_id = force_text(urlsafe_base64_decode(uidb64))
+            if User.objects.filter(id = user_id).exists():
+                user = User.objects.get(id = user_id)
+                token_generator = PasswordResetTokenGenerator()
+                if token_generator.check_token(user=user, token=token):
+                    
+                    user.set_password(password_one)
+                    user.save()
+                    return Response({'message': 'Password has been changed succesfully'}, status= status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'Password reset link is invalid or expired, please reqeust a new one'}, status= status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'message': 'FATAL: An error occured'}, status=status.HTTP_400_BAD_REQUEST)
+        except DjangoUnicodeDecodeError as identifier:
+            return Response({'message': 'FATAL: An error occured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+def resend_activation_email(request, *args, **kwargs):
+    email = request.query_params.get('email')
+    try:
+        user = User.objects.get(email= email)
+    except Exception as e:
+        user = None
+    
+    if user is not None:
+        user_profile = Profile.objects.get(id_user = user.id)
+        if user_profile.is_email_verified:
+            return Response({'message': 'Your account is already verified, you can now login'}, status= status.HTTP_200_OK)
+        else:
+            if settings.DEBUG:
+                current_site = settings.DOMAIN_SITE
+            else:
+                current_site = get_current_site(request=request)
+
+            email_body = render_to_string('activate.html', {
+                'user': user,
+                'domain': current_site,
+                'uid': urlsafe_base64_encode(force_bytes(user_profile.user.id)),
+                'token': generate_token.make_token(user_profile)
+            })
+
+            email_subject = 'Verify your account'
+            text_content = strip_tags(email_body)
+            sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
+            email= EmailMultiAlternatives(
+                email_subject,
+                text_content,
+                sender,
+                [user_profile.user.email]
+            )
+            email.attach_alternative(email_body, 'text/html')
+            email.send()
+
+            return Response({'message': f'Confirmation email has been resent to {user_profile.user.email}'})        
+    else:
+        return Response({'message': f'{email} could not be located in our records, Ensure you are signed up using this email'}, status= status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def validateUser(request, *args, **kwargs):
+    encoded_uid = request.query_params.get('uidb64')
+    token = request.query_params.get('token')
+
+    try:
+        uid = force_text(urlsafe_base64_decode(encoded_uid))
+        user_profile = Profile.objects.get(id_user=uid)
+    except Exception as e:
+        user_profile = None
+    
+    if user_profile and generate_token.check_token(user_profile, token):
+        user_profile.is_email_verified = True
+        user_profile.save()
+        return Response({'message': 'Account verification complete'}, status=status.HTTP_200_OK)
+    
+    return Response({'message': 'Account verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+        
 @api_view(['POST'])
 def login(request, *args, **kwargs):   
     email = request.data.get('email')
     password = request.data.get('password')
 
     user = auth.authenticate(request, username=email, password=password)
-
+    try:
+        user_profile = Profile.objects.get(id_user=user.id)
+    except Exception as e:
+        user_profile = None
+    
     if user is not None:
-        # auth.login(request, user)
-        try:
-            old_token = Token.objects.get(user=user)
-            old_token.delete()
-        except Token.DoesNotExist:
-            pass
+        if user_profile is not None and user_profile.is_email_verified:
+            try:
+                old_token = Token.objects.get(user=user)
+                old_token.delete()
+            except Token.DoesNotExist:
+                pass
 
-        token, created = Token.objects.get_or_create(user=user)
-        
-        context ={
-            'message': 'Login successfull',
-            'is_staff': user.is_staff,
-            'token': token.key
-        }
-        return Response(context, status=status.HTTP_200_OK)
+            token, created = Token.objects.get_or_create(user=user)
+            
+            context ={
+                'message': 'Login successfull',
+                'is_staff': user.is_staff,
+                'token': token.key
+            }
+            return Response(context, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Your email is not verified, please verify your email before proceeding'}, status=  status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'message': 'Invalid credentials'}, status= status.HTTP_400_BAD_REQUEST)
 
@@ -287,8 +466,6 @@ class ListSubCategoryApiView(generics.ListAPIView):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
 
-
-
 @api_view(['GET', 'POST'])
 def GetDetails(request, *args, **kwargs):
     current_site =get_current_site(request)
@@ -308,3 +485,6 @@ def contactBridgeGap(request, *args, **kwargs):
     sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
     send_mail(subject, message, sender, ['codebee345@outlook.com', 'onuhudoudo@gmail.com'],fail_silently=False)
     return Response({'message': 'email sent succesfully'})
+
+
+
