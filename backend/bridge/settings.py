@@ -147,9 +147,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '../../public_html/media/'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500', 'https://bridgegapclothing.com', 'http://localhost:5500'
-]
+if DEBUG: 
+    CORS_ALLOWED_ORIGINS = [
+        'http://127.0.0.1:5500', 'http://localhost:5500'
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        'https://bridgegapclothing.com'
+    ]
+
+
 
 CORS_ALLOW_CREDENTIALS = True
 

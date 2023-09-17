@@ -342,7 +342,7 @@ def CreateCategory(request, *args, **kwargs):
     category_title = request.data.get('category_title')
     if category_title is not None:
         #checking if category title already exists
-        if Category.objects.filter(category_title = category_title).exists():
+        if Category.objects.filter(category_title__iexact = category_title).exists():
             context = {
                 'message': f"a category with the name {category_title} already exists",
                 'status': status.HTTP_400_BAD_REQUEST
@@ -375,11 +375,11 @@ def CreateSubCategory(request, *args, **kwargs):
     sub_category_title = request.data.get('sub_category_title')
 
     if category_title is not None:
-        category = Category.objects.filter(category_title = category_title)
+        category = Category.objects.filter(category_title__iexact = category_title)
         
         if category.exists():
             category_object = Category.objects.get(category_title = category_title)
-            if not SubCategory.objects.filter(category= category_object.pk, sub_category_title = sub_category_title).exists():
+            if not SubCategory.objects.filter(category= category_object.pk, sub_category_title__iexact = sub_category_title).exists():
                 print(type(sub_category_title))
                 data = {
                     "sub_category_title": sub_category_title,
@@ -417,8 +417,8 @@ def CreateProduct(request, *args, **kwargs):
     price = request.data.get('price')
     product_image = request.FILES['product_image']
 
-    if Category.objects.filter(category_title = category_title).exists():
-        if SubCategory.objects.filter(sub_category_title = sub_category_title).exists():
+    if Category.objects.filter(category_title__iexact = category_title).exists():
+        if SubCategory.objects.filter(sub_category_title__iexact = sub_category_title).exists():
             category = Category.objects.get(category_title = category_title).pk
             sub_category = SubCategory.objects.get(sub_category_title = sub_category_title).pk
 
@@ -465,6 +465,25 @@ class ListCategoryApiVeiw(generics.ListAPIView):
 class ListSubCategoryApiView(generics.ListAPIView):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
+
+class DeleteCategory(generics.DestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        instance = self.get_object()
+        instance.delete()
+        return Response({'detail:' : f'category {instance.category_title} deleted succesfully'}, status= status.HTTP_200_OK)
+
+class DeleteSubCategory(generics.DestroyAPIView):
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        return super().perform_destroy(instance)
+
 
 @api_view(['GET', 'POST'])
 def GetDetails(request, *args, **kwargs):

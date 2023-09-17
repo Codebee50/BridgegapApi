@@ -17,7 +17,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'price',
             'product_url',
             'category_title',
-            'sub_category_title'
+            'sub_category_title',
+            'id'
         ]
 
     def get_category_title(self, obj):
@@ -35,25 +36,26 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields =[
             'category_title',
+            'id'
         ]
 
 class SubCategorySerializer(serializers.ModelSerializer):
     # category = serializers.SerializerMethodField(read_only =True)
     sub_category_title = serializers.CharField(validators = [validators.unique_sub_category])
+    category_title = serializers.SerializerMethodField(read_only =True)
     class Meta:
         model = SubCategory
         fields =[
             'category',
-            'sub_category_title'
+            'sub_category_title',
+            'id',
+            'category_title'
         ]
     
-    # def get_category(self, obj):
-    #     print('getting category')
-    #     request = self.context.get('request')
-    #     category_title = request.data.get('category_title')
-        
-    #     category = Category.objects.filter(category_title= category_title)
-    #     return category
+    
+    def get_category_title(self, obj):
+        category= Category.objects.get(pk = obj.category.pk) or None
+        return category.category_title
 
     
 
