@@ -23,5 +23,6 @@ urlpatterns =[
     path('requestresetpassword/', views.RequestResetPassword, name='requestresetpassword'),
     path('changeuserpassword', views.ChangeUserPassword, name='changeuserpassword'),
     path('deletecategory/<str:pk>', views.DeleteCategory.as_view(), name='deletecategory'),
-    path('deletesubcategory/<str:pk>', views.DeleteSubCategory.as_view(), name='deletesubcategory')
+    path('deletesubcategory/<str:pk>', views.DeleteSubCategory.as_view(), name='deletesubcategory'),
+    path('deleteproduct/<str:pk>', views.DeleteProduct.as_view(), name='deleteproduct')
 ]
