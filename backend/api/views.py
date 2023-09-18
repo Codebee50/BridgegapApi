@@ -454,6 +454,12 @@ class GetProductsApiView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        limit = self.request.query_params.get('limit')
+        if (limit):
+            return Product.objects.all()[:int(limit)]
+        return super().get_queryset()
+
 class ProductDetailApiView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
