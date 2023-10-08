@@ -53,14 +53,6 @@ def signup(request, *args, **kwargs):
 
             #send a verification email
             sendActivationEmail(request=request, user=user_profile)
-            # context = {
-            #     'isAdmin': isAdmin,
-            #     'message': 'Account created succesfully',
-            #     'username': username,
-            #     'email': email,
-            # }
-            # return Response(context, status=status.HTTP_201_CREATED)
-
             context = {
                 'message': f'An email has been sent to {user.email}, click on the link in the email to verify your email address',
                 'username': user.username,
@@ -95,6 +87,7 @@ def sendActivationEmail(request, user):
         [user.user.email]
     )
     email.attach_alternative(email_body, 'text/html')
+    # email.content_subtype = 'html'
     email.send()
 
 @api_view(['POST'])
@@ -130,7 +123,7 @@ def RequestResetPassword(request, *args, **kwargs):
                 [user_profile.user.email] 
             )
         email.attach_alternative(email_body, 'text/html')
-        email.content_subtype = 'html'
+        # email.content_subtype = 'html'
         email.send()
         return Response({'message': f'Instructions on how to reset your password has been sent to {user_email}'}, status= status.HTTP_200_OK)
     else:
@@ -165,7 +158,6 @@ def ChangeUserPassword(request, *args, **kwargs):
                 return Response({'message': 'FATAL: An error occured'}, status=status.HTTP_400_BAD_REQUEST)
         except DjangoUnicodeDecodeError as identifier:
             return Response({'message': 'FATAL: An error occured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 @api_view(['POST'])

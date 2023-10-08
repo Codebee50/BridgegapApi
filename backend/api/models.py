@@ -24,3 +24,6 @@ class Profile(models.Model):
     user = models.ForeignKey(current_user, on_delete=models.CASCADE)
     id_user = models.IntegerField(default= -1)
     is_email_verified = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.user.username
