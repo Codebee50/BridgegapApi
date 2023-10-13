@@ -179,7 +179,7 @@ def resend_activation_email(request, *args, **kwargs):
                 current_site = get_current_site(request=request)
 
             email_body = render_to_string('activate.html', {
-                'user': user,
+                'user': user_profile,
                 'domain': current_site,
                 'uid': urlsafe_base64_encode(force_bytes(user_profile.user.id)),
                 'token': generate_token.make_token(user_profile)
@@ -227,6 +227,7 @@ def login(request, *args, **kwargs):
     password = request.data.get('password')
 
     user = auth.authenticate(request, username=email, password=password)
+
     try:
         user_profile = Profile.objects.get(id_user=user.id)
     except Exception as e:

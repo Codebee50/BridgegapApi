@@ -148,9 +148,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = '../../public_html/media/'
 
 if DEBUG: 
-    CORS_ALLOWED_ORIGINS = [
-        'http://127.0.0.1:5500', 'http://localhost:5500'
-    ]
+    CORS_ORIGIN_ALLOW_ALL = True
 else:
     CORS_ALLOWED_ORIGINS = [
         'https://bridgegapclothing.com'
