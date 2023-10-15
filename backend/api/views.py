@@ -22,6 +22,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .utils import generate_token
 from django.utils.html import strip_tags
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from premailer import Premailer
 
 # Create your views here.
 @api_view(['POST'])
@@ -77,7 +78,7 @@ def sendActivationEmail(request, user):
         'uid': urlsafe_base64_encode(force_bytes(user.user.id)),
         'token': generate_token.make_token(user)
     })
-
+    inlined_html = Premailer(email_body).transform()
     text_content = strip_tags(email_body)
     sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
     email= EmailMultiAlternatives(
@@ -86,8 +87,8 @@ def sendActivationEmail(request, user):
         sender,
         [user.user.email]
     )
-    email.attach_alternative(email_body, 'text/html')
-    # email.content_subtype = 'html'
+
+    email.attach_alternative(inlined_html, 'text/html')
     email.send()
 
 @api_view(['POST'])
@@ -114,6 +115,7 @@ def RequestResetPassword(request, *args, **kwargs):
             'token': PasswordResetTokenGenerator().make_token(user)
         })
 
+        inlined_html = Premailer(email_body).transform()
         text_content = strip_tags(email_body)
         sender = 'Bridgegap Clothing <' + str(settings.EMAIL_HOST_USER) + '>' 
         email = EmailMultiAlternatives(
@@ -122,8 +124,7 @@ def RequestResetPassword(request, *args, **kwargs):
                 sender,
                 [user_profile.user.email] 
             )
-        email.attach_alternative(email_body, 'text/html')
-        # email.content_subtype = 'html'
+        email.attach_alternative(inlined_html, 'text/html')
         email.send()
         return Response({'message': f'Instructions on how to reset your password has been sent to {user_email}'}, status= status.HTTP_200_OK)
     else:
@@ -178,13 +179,14 @@ def resend_activation_email(request, *args, **kwargs):
             else:
                 current_site = get_current_site(request=request)
 
+
             email_body = render_to_string('activate.html', {
                 'user': user_profile,
                 'domain': current_site,
                 'uid': urlsafe_base64_encode(force_bytes(user_profile.user.id)),
                 'token': generate_token.make_token(user_profile)
             })
-
+            inlined_html = Premailer(email_body).transform()
             email_subject = 'Verify your account'
             text_content = strip_tags(email_body)
             sender = 'Bridgegapclothing <' + str(settings.EMAIL_HOST_USER) + '>' 
@@ -194,7 +196,7 @@ def resend_activation_email(request, *args, **kwargs):
                 sender,
                 [user_profile.user.email]
             )
-            email.attach_alternative(email_body, 'text/html')
+            email.attach_alternative(inlined_html, 'text/html')
             email.send()
 
             return Response({'message': f'Confirmation email has been resent to {user_profile.user.email}'})        
