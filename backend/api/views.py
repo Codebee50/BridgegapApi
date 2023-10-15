@@ -204,7 +204,7 @@ def resend_activation_email(request, *args, **kwargs):
         return Response({'message': f'{email} could not be located in our records, Ensure you are signed up using this email'}, status= status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def validateUser(request, *args, **kwargs):
     encoded_uid = request.query_params.get('uidb64')
     token = request.query_params.get('token')
